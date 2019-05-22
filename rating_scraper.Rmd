@@ -1,11 +1,18 @@
-Game of Thrones Ratings
-================
-Fabio Votta
-2019-05-22 02:34:35
+---
+title: "Game of Thrones Ratings"
+author: "Fabio Votta"
+date: "`r Sys.time()`"
+output: github_document
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(message = F, warning = F, fig.align = "center")
+```
+
 
 ## Packages and Folders
 
-``` r
+```{r}
 # Install these packages if you don't have them yet
 # if (!require("pacman")) install.packages("pacman")
 # devtools::install_github("favstats/tidytemplate")
@@ -19,9 +26,12 @@ pacman::p_load(tidyverse, tidytemplate, htmltab,
 # tidytemplate::images_dir()
 ```
 
+
 ## Scraping Views from Wikipedia
 
-``` r
+```{r, data, eval = F}
+
+
 got_tables <- "https://en.wikipedia.org/wiki/List_of_Game_of_Thrones_episodes"
 
 
@@ -37,9 +47,13 @@ episode_list <- 2:9 %>%
 save(episode_list, file = "data/episode_list.Rdata")
 ```
 
+```{r, echo = F}
+load("data/episode_list.Rdata")
+```
+
 ## Views over time
 
-``` r
+```{r, fig.width = 9, fig.height = 5}
 episode_list %>% 
   ggplot(aes(no_overall, u_s_viewers_millions, fill = season)) +
   geom_col(alpha = 0.9, position = position_dodge(width = 0.1)) +
@@ -55,66 +69,30 @@ episode_list %>%
   theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5, family = "Game of Thrones"),
         plot.subtitle = element_text(size = 10, hjust = 0.5, family = "Game of Thrones"),
         plot.caption = element_text(size = 8))
-```
 
-<img src="rating_scraper_files/figure-gfm/unnamed-chunk-4-1.png" style="display: block; margin: auto;" />
-
-``` r
 ggsave_it(season_views, width = 9, height = 5)
+
 ```
 
 ## How many episodes were written by which writer?
 
-``` r
+```{r}
 episode_list %>% 
   count(written_by, sort = T)
 ```
 
-    ## # A tibble: 5 x 2
-    ##   written_by                      n
-    ##   <chr>                       <int>
-    ## 1 David Benioff & D. B. Weiss    51
-    ## 2 Bryan Cogman                   11
-    ## 3 Dave Hill                       4
-    ## 4 George R. R. Martin             4
-    ## 5 Vanessa Taylor                  3
-
 ## How many episodes were directed by which director?
 
-``` r
+```{r}
 episode_list %>% 
   count(directed_by, sort = T)
 ```
-
-    ## # A tibble: 20 x 2
-    ##    directed_by                     n
-    ##    <chr>                       <int>
-    ##  1 David Nutter                    9
-    ##  2 Alan Taylor                     7
-    ##  3 Alex Graves                     6
-    ##  4 Jeremy Podeswa                  6
-    ##  5 Mark Mylod                      6
-    ##  6 Miguel Sapochnik                6
-    ##  7 Daniel Minahan                  5
-    ##  8 Alik Sakharov                   4
-    ##  9 Michelle MacLaren               4
-    ## 10 Brian Kirk                      3
-    ## 11 Daniel Sackheim                 2
-    ## 12 David Petrarca                  2
-    ## 13 Jack Bender                     2
-    ## 14 Matt Shakman                    2
-    ## 15 Michael Slovis                  2
-    ## 16 Neil Marshall                   2
-    ## 17 Tim Van Patten                  2
-    ## 18 D. B. Weiss                     1
-    ## 19 David Benioff                   1
-    ## 20 David Benioff & D. B. Weiss     1
 
 ## Scraping Rotten Tomatoes Ratings
 
 Creating a function to get the ratings
 
-``` r
+```{r, eval = F}
 get_rotten_ratings <- function(link) {
   
   raw_html <- read_html(link)
@@ -148,9 +126,18 @@ episode_ratings <- episode_list %>%
 save(episode_ratings, file = "data/episode_ratings.Rdata")
 ```
 
+```{r, echo = F}
+load("data/episode_ratings.Rdata")
+```
+
+
+
 ## Ratings by Writer
 
-``` r
+```{r, analysis, fig.width = 9, fig.height = 5}
+
+
+
 episode_ratings %>% 
   mutate(written_by = fct_reorder(written_by, rotten_rating)) %>% 
   ggplot(aes(written_by, rotten_rating)) +
@@ -163,17 +150,16 @@ episode_ratings %>%
   labs(y = "Rotten Tomatoes Rating", x = "", title = "Game of Thrones", subtitle = "Ratings  by Writer")  +
   theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5, family = "Game of Thrones"),
         plot.subtitle = element_text(size = 10, hjust = 0.5, family = "Game of Thrones"))
-```
 
-<img src="rating_scraper_files/figure-gfm/analysis-1.png" style="display: block; margin: auto;" />
 
-``` r
 ggsave_it(writer_ratings, width = 9, height = 5)
+
+
 ```
 
 ## Scores by Writer
 
-``` r
+```{r, fig.width = 9, fig.height = 5}
 episode_ratings %>% 
   mutate(written_by = fct_reorder(written_by, rotten_score)) %>% 
   ggplot(aes(written_by, rotten_score)) +
@@ -186,17 +172,17 @@ episode_ratings %>%
   labs(y = "Rotten Tomatoes Scores", x = "", title = "Game of Thrones", subtitle = "Episode  Scores  by Writer")  +
   theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5, family = "Game of Thrones"),
         plot.subtitle = element_text(size = 10, hjust = 0.5, family = "Game of Thrones"))
-```
 
-<img src="rating_scraper_files/figure-gfm/unnamed-chunk-9-1.png" style="display: block; margin: auto;" />
 
-``` r
 ggsave_it(writer_scores, width = 9, height = 5)
+
+
 ```
+
 
 ## Rating by Director
 
-``` r
+```{r, fig.width = 6, fig.height = 12}
 episode_ratings %>% 
   mutate(directed_by = fct_reorder(directed_by, rotten_rating)) %>% 
   ggplot(aes(directed_by, rotten_rating)) +
@@ -210,17 +196,15 @@ episode_ratings %>%
   theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5, family = "Game of Thrones"),
         plot.subtitle = element_text(size = 10, hjust = 0.5, family = "Game of Thrones")) +
   coord_flip()
-```
 
-<img src="rating_scraper_files/figure-gfm/unnamed-chunk-10-1.png" style="display: block; margin: auto;" />
 
-``` r
 ggsave_it(director_ratings, width = 6, height = 12)
 ```
 
+
 ## Scores by Director
 
-``` r
+```{r, fig.width = 6, fig.height = 12}
 episode_ratings %>% 
   mutate(directed_by = fct_reorder(directed_by, rotten_score)) %>% 
   ggplot(aes(directed_by, rotten_score)) +
@@ -234,17 +218,14 @@ episode_ratings %>%
   theme(plot.title = element_text(size = 20, face = "bold", hjust = 0.5, family = "Game of Thrones"),
         plot.subtitle = element_text(size = 10, hjust = 0.5, family = "Game of Thrones")) +
   coord_flip()
-```
 
-<img src="rating_scraper_files/figure-gfm/unnamed-chunk-11-1.png" style="display: block; margin: auto;" />
 
-``` r
 ggsave_it(director_scores, width = 6, height = 12)
 ```
 
 ## Rating by Episode
 
-``` r
+```{r, fig.width = 12, fig.height = 6}
 episode_titles <- episode_ratings %>%
   filter(rotten_rating > 9.4 | rotten_rating < 7.5) %>% 
   filter(title != "The Lion and the Rose") %>% 
@@ -265,17 +246,14 @@ episode_ratings %>%
   guides(color = F)  +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank())
-```
 
-<img src="rating_scraper_files/figure-gfm/unnamed-chunk-12-1.png" style="display: block; margin: auto;" />
 
-``` r
 ggsave_it(episode_ratings, width = 12, height = 6)
 ```
 
 ## Score by Episode
 
-``` r
+```{r, fig.width = 12, fig.height = 6}
 episode_titles <- episode_ratings %>%
   filter(rotten_score < 80) %>%
   filter(title != "The Lion and the Rose") %>%
@@ -296,10 +274,7 @@ episode_ratings %>%
   guides(color = F)  +
   theme(axis.text.x = element_blank(),
         axis.ticks.x = element_blank())
-```
 
-<img src="rating_scraper_files/figure-gfm/unnamed-chunk-13-1.png" style="display: block; margin: auto;" />
 
-``` r
 ggsave_it(rotten_score, width = 12, height = 6)
 ```
